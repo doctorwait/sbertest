@@ -2,14 +2,16 @@ from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+
 
 import pytest
 import requests
 import pyautogui
+import os
 import time
 
 
@@ -162,4 +164,28 @@ class TestMainPage:
         WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.modal-footer > p')))
         driver.switch_to.active_element.find_element(by='css selector', value='.modal-footer > p').click()
 
+    @pytest.mark.skip
+    def test_download_files(self, driver):
+        driver.get(main_page)
+        driver.find_element(by='css selector', value='[href="/download"]').click()
+        objects = driver.find_elements(by='css selector', value='.example > :nth-child(2n)')
+        if not os.path.exists('downloads'):
+            os.mkdir('downloads')
+        for obj in objects:
+            link = obj.get_property('href')
+            name = obj.text
+            with open('downloads/' + name, 'wb') as file:
+                target = requests.get(link)
+                file.write(target.content)
+        assert len(os.listdir('downloads')) > 0, "The files didn't download."
+
+    @pytest.mark.skip
+    def test_upload_files(self, driver):
+        driver.get(main_page)
+        driver.find_element(by='css selector', value='[href = "/upload"]').click()
+        file_to_upload = os.getcwd() + r'\for_drag_and_drop.js'
+        driver.find_element(by='id', value='file-upload').send_keys(file_to_upload)
+        driver.find_element(by='id', value='file-submit').click()
+        result = driver.find_element(by='css selector', value='.example > h3').text
+        assert result == 'File Uploaded!', "The file has not been uploaded to the Internet."
 
