@@ -189,3 +189,9 @@ class TestMainPage:
         result = driver.find_element(by='css selector', value='.example > h3').text
         assert result == 'File Uploaded!', "The file has not been uploaded to the Internet."
 
+    @pytest.mark.skip
+    def test_floating_menu(self, driver):
+        driver.get(main_page)
+        driver.find_element(by='css selector', value='[href="/floating_menu"]').click()
+        driver.execute_script("scroll(0, 250)")
+        driver.find_element(by='css selector', value='[href = "#home"]').click()
