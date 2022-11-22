@@ -171,19 +171,21 @@ class TestMainPage:
         objects = driver.find_elements(by='css selector', value='.example > :nth-child(2n)')
         if not os.path.exists('downloads'):
             os.mkdir('downloads')
+        os.chdir('downloads')
         for obj in objects:
             link = obj.get_property('href')
             name = obj.text
-            with open('downloads/' + name, 'wb') as file:
+            with open(name, 'wb') as file:
                 target = requests.get(link)
                 file.write(target.content)
+        os.chdir('..')
         assert len(os.listdir('downloads')) > 0, "The files didn't download."
 
     @pytest.mark.skip
     def test_upload_files(self, driver):
         driver.get(main_page)
         driver.find_element(by='css selector', value='[href = "/upload"]').click()
-        file_to_upload = os.getcwd() + r'\for_drag_and_drop.js'
+        file_to_upload = os.path.abspath('for_drag_and_drop.js')
         driver.find_element(by='id', value='file-upload').send_keys(file_to_upload)
         driver.find_element(by='id', value='file-submit').click()
         result = driver.find_element(by='css selector', value='.example > h3').text
